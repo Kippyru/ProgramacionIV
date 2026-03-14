@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Tecnicatura Programación IV - Integración</title>
+<script src="https://unpkg.com/rxjs@7.8.1/dist/bundles/rxjs.umd.min.js"></script>
+<style>
+.box { border: 1px solid #ccc; padding: 10px; margin: 10px; }
+.hidden { display: none; }
+</style>
+</head>
+<body>
+
+<div id="auth-section" class="box">
+<h3>Login (Backend Privado)</h3>
+<input type="text" id="user" placeholder="Usuario (admin)">
+<input type="password" id="pass" placeholder="Password (1234)">
+<button id="btnLogin">Ingresar</button>
+</div>
+
+<div class="box">
+<h3>Buscador de Provincias (API Pública - Georef)</h3>
+<input type="text" id="buscador" placeholder="Escribe para buscar...">
+<ul id="resultados-publicos"></ul>
+</div>
+
+<div id="private-section" class="box hidden">
+<h3>Panel de Usuario (Protegido por JWT)</h3>
+<button id="btnVerPerfil">Consultar Mi Perfil</button>
+<pre id="perfil-data"></pre>
+<button onclick="logout()">Cerrar Sesión</button>
+</div>
+
+<script>
+const { fromEvent, map, filter, debounceTime, distinctUntilChanged, switchMap,
+catchError, of } = rxjs;
+const { ajax } = rxjs.ajax;
+
+// --- GESTIÓN DE LOGIN ---
+fromEvent(document.getElementById('btnLogin'), 'click').subscribe(async () => {
+const username = document.getElementById('user').value;
+const password = document.getElementById('pass').value;
+
+try {
+const response = await fetch('http://localhost:8080/auth/login', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ username, password })
+});
+
+if (response.ok) {
+const data = await response.json();
+localStorage.setItem('jwt_token', data.token); // Persistencia [cite: 109, 307]
+showPrivateUI(true);
+} else { alert("Error de credenciales"); }
+} catch (e) { console.error("Error conectando al backend"); }
+});
+
+// --- BUSCADOR REACTIVO (API PÚBLICA - Clase 2 + RxJS) ---
+const inputBuscador = document.getElementById('buscador');
+fromEvent(inputBuscador, 'input').pipe(
+map(e => e.target.value.trim()),
+filter(text => text.length > 2), // [cite: 118]
+debounceTime(400), // Optimización [cite: 119, 372]
+
+distinctUntilChanged(), // [cite: 120, 373]
+switchMap(term =>
+
+ajax.getJSON(`https://apis.datos.gob.ar/georef/api/provincias?nombre=${term}`).pipe(
+catchError(err => of({ provincias: [] })) // Manejo de errores [cite: 130]
+)
+)
+).subscribe(res => {
+const list = document.getElementById('resultados-publicos');
+list.innerHTML = res.provincias.map(p => `<li>${p.nombre}</li>`).join(''); // Manipulación DOM [cite: 136]
+});
+
+// --- CONSULTA PROTEGIDA (API PRIVADA - Clase 3) ---
+fromEvent(document.getElementById('btnVerPerfil'), 'click').pipe(
+switchMap(() => {
+const token = localStorage.getItem('jwt_token'); // Recuperar token [cite: 122, 320]
+return ajax({
+url: 'http://localhost:8080/api/perfil',
+headers: { 'Authorization': `Bearer ${token}` } // Inyección [cite: 125, 329]
+}).pipe(
+map(r => r.response),
+catchError(err => {
+if(err.status === 401) logout(); // Token expirado [cite: 165]
+return of({ error: "No autorizado" });
+})
+
+);
+})
+).subscribe(data => {
+document.getElementById('perfil-data').innerText = JSON.stringify(data, null, 2);
+});
+
+function showPrivateUI(isLoggedIn) {
+document.getElementById('auth-section').classList.toggle('hidden', isLoggedIn);
+document.getElementById('private-section').classList.toggle('hidden', !isLoggedIn);
+}
+
+function logout() {
+localStorage.removeItem('jwt_token'); // [cite: 139, 345]
+location.reload();
+}
+</script>
+</body>
+</html>
