@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import java.util.Date;
 
 @Component
-public class jwtUtils {
+public class JwtUtils {
     // 1. La Clave Secreta: DEBE ser larga (mínimo 256 bits para HS256)
     // Regla de oro: No subir esto a Git en producción [cite: 175, 179]
     private String secret = "mi_clave_secreta_super_larga_y_segura_para_el_taller_de_tecnicatura_2026";
