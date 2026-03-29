@@ -9,3 +9,13 @@ Se verifica con un POST en localhost:8080/auth/login
 
 "username" : "Rodo",  
 "password" : "holarodo"
+
+
+Clase 27/03/26
+
+Implementar un frontEnd utilizando Angular que contenga:  
+- Login  
+- Validación  
+- Persistencia  
+- Navegación  
+- Peticiones Protegidas
