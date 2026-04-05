@@ -1,0 +1,23 @@
+<div>
+    <h2>Lista de Productos</h2>
+    <p>Total: {{ (productos$ | async)?.length }}</p>
+
+    <table border="1">
+
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Precio</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr *ngFor="let p of (productos$ | async)">
+                <td>{{ p.id }}</td>
+                <td>{{ p.nombre }}</td>
+                <td>{{ p.precio }}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
