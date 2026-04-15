@@ -1,0 +1,20 @@
+<form [formGroup]="form">
+
+  <label>Username</label>
+  <input formControlName="username">
+
+  <div *ngIf="f['username'].pending">⏳ Verificando...</div>
+  <div *ngIf="f['username'].hasError('required')">Requerido</div>
+  <div *ngIf="f['username'].hasError('minlength')">Min 4</div>
+  <div *ngIf="f['username'].hasError('usernameTaken')">Ya existe</div>
+
+  <hr>
+
+  <label>Email</label>
+  <input formControlName="email">
+
+  <div *ngIf="f['email'].pending">⏳ Verificando...</div>
+  <div *ngIf="f['email'].hasError('email')">Formato inválido</div>
+  <div *ngIf="f['email'].hasError('emailTaken')">Ya existe</div>
+
+</form>

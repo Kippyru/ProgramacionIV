@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:4200")
 @RequestMapping("/api")
 public class UserController {
 
@@ -24,5 +25,11 @@ public class UserController {
     @GetMapping("/list")
     public ResponseEntity<?> list() {
         return ResponseEntity.ok(userService.getAll());
+    }
+
+    @GetMapping("/exists")
+    public ResponseEntity<Boolean> exists(@RequestParam String username) {
+        boolean exists = userService.existsByUsername(username);
+        return ResponseEntity.ok(exists);
     }
 }
